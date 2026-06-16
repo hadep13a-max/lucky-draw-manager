@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useExamStore } from "@/lib/exam-store";
-import { Users, BookOpen, Shuffle, Trophy, ArrowRight } from "lucide-react";
+import { Users, BookOpen, Trophy, ArrowRight } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import backgroundImage from "@/images/background.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,42 +27,13 @@ function Index() {
 
   return (
     <AppShell>
-      <section className="relative overflow-hidden rounded-[28px] bg-stage p-10 text-primary-foreground shadow-glow md:p-14">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/15 bg-primary-foreground/5 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.25em] text-accent backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-float-soft" />
-            Hội đồng thi · Phiên bản 2026
-          </div>
-          <h1 className="mt-5 font-display text-[44px] font-semibold leading-[1.05] tracking-tight md:text-6xl">
-            Bốc thăm <span className="text-gold italic">minh bạch</span>,
-            <br />
-            tổ chức <span className="text-gold italic">chuyên nghiệp</span>.
-          </h1>
-          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-primary-foreground/70 md:text-base">
-            Quản lý danh sách thí sinh, kho đề thi và tổ chức bốc thăm trực tiếp
-            với hiệu ứng quay số trên màn hình lớn — tất cả trong một không gian
-            điều khiển duy nhất.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              to="/draw"
-              className="group inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-95"
-            >
-              <Shuffle className="h-4 w-4" /> Bắt đầu bốc thăm
-              <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-            </Link>
-            <Link
-              to="/results"
-              className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 px-6 py-3 text-sm font-medium transition hover:bg-primary-foreground/10"
-            >
-              Xem kết quả
-            </Link>
-          </div>
-        </div>
-        <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-accent/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 right-20 h-80 w-80 rounded-full bg-primary/40 blur-3xl" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      </section>
+      <div className="relative overflow-hidden rounded-[28px] shadow-glow">
+        <img
+          src={backgroundImage}
+          alt="Hội thi"
+          className="w-full h-auto object-cover block"
+        />
+      </div>
 
       <section className="mt-8 grid gap-4 md:grid-cols-3">
         {stats.map((s) => {

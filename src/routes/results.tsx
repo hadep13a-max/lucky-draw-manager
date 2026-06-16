@@ -1,6 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { AppShell } from "@/components/app-shell";
 import { examStore, useExamStore } from "@/lib/exam-store";
+import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
 import { Trophy, Trash2, Download } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +13,19 @@ export const Route = createFileRoute("/results")({
 });
 
 function Page() {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate({ to: "/login", search: { redirect: "/results" } });
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   const results = useExamStore((s) => s.results);
 
   const exportCsv = () => {

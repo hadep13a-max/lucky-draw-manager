@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TopicsRouteImport } from './routes/topics'
 import { Route as ResultsRouteImport } from './routes/results'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as DrawRouteImport } from './routes/draw'
 import { Route as CandidatesRouteImport } from './routes/candidates'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +24,11 @@ const TopicsRoute = TopicsRouteImport.update({
 const ResultsRoute = ResultsRouteImport.update({
   id: '/results',
   path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DrawRoute = DrawRouteImport.update({
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/candidates': typeof CandidatesRoute
   '/draw': typeof DrawRoute
+  '/login': typeof LoginRoute
   '/results': typeof ResultsRoute
   '/topics': typeof TopicsRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/candidates': typeof CandidatesRoute
   '/draw': typeof DrawRoute
+  '/login': typeof LoginRoute
   '/results': typeof ResultsRoute
   '/topics': typeof TopicsRoute
 }
@@ -60,21 +68,30 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/candidates': typeof CandidatesRoute
   '/draw': typeof DrawRoute
+  '/login': typeof LoginRoute
   '/results': typeof ResultsRoute
   '/topics': typeof TopicsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/candidates' | '/draw' | '/results' | '/topics'
+  fullPaths: '/' | '/candidates' | '/draw' | '/login' | '/results' | '/topics'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/candidates' | '/draw' | '/results' | '/topics'
-  id: '__root__' | '/' | '/candidates' | '/draw' | '/results' | '/topics'
+  to: '/' | '/candidates' | '/draw' | '/login' | '/results' | '/topics'
+  id:
+    | '__root__'
+    | '/'
+    | '/candidates'
+    | '/draw'
+    | '/login'
+    | '/results'
+    | '/topics'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CandidatesRoute: typeof CandidatesRoute
   DrawRoute: typeof DrawRoute
+  LoginRoute: typeof LoginRoute
   ResultsRoute: typeof ResultsRoute
   TopicsRoute: typeof TopicsRoute
 }
@@ -93,6 +110,13 @@ declare module '@tanstack/react-router' {
       path: '/results'
       fullPath: '/results'
       preLoaderRoute: typeof ResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/draw': {
@@ -123,9 +147,20 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CandidatesRoute: CandidatesRoute,
   DrawRoute: DrawRoute,
+  LoginRoute: LoginRoute,
   ResultsRoute: ResultsRoute,
   TopicsRoute: TopicsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

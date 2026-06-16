@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { AppShell } from "@/components/app-shell";
 import { examStore, useExamStore, type Candidate } from "@/lib/exam-store";
+import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,19 @@ export const Route = createFileRoute("/candidates")({
 });
 
 function Page() {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate({ to: "/login", search: { redirect: "/candidates" } });
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   const candidates = useExamStore((s) => s.candidates);
   const [editing, setEditing] = useState<Candidate | null>(null);
   const [form, setForm] = useState({ name: "", code: "", note: "" });

@@ -1,17 +1,25 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useRef, useState, useEffect } from "react";
 import { AppShell } from "@/components/app-shell";
 import { examStore, useExamStore, type Candidate, type Topic } from "@/lib/exam-store";
+import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
 import { Shuffle, Users, BookOpen, Save, RotateCw } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/draw")({
   head: () => ({ meta: [{ title: "Bốc thăm — Hội đồng thi" }] }),
   component: Page,
 });
 
-function useDrawer<T extends { id: string }>(items: T[]) {
+function useDrawer<T extends { id: string }>(items: T[], onComplete?: (item: T) => void) {
   const [current, setCurrent] = useState<T | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [display, setDisplay] = useState<T | null>(null);
@@ -36,6 +44,9 @@ function useDrawer<T extends { id: string }>(items: T[]) {
       setDisplay(picked);
       setCurrent(picked);
       setSpinning(false);
+      if (onComplete) {
+        onComplete(picked);
+      }
     }, duration);
   };
 
@@ -48,6 +59,19 @@ function useDrawer<T extends { id: string }>(items: T[]) {
 }
 
 function Page() {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate({ to: "/login", search: { redirect: "/draw" } });
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   const candidates = useExamStore((s) => s.candidates);
   const topics = useExamStore((s) => s.topics);
   const results = useExamStore((s) => s.results);
@@ -55,8 +79,35 @@ function Page() {
   const drawnCandidateIds = new Set(results.map((r) => r.candidateId));
   const [excludeDrawn, setExcludeDrawn] = useState(true);
 
-  const cd = useDrawer<Candidate>(candidates);
-  const td = useDrawer<Topic>(topics);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState<{
+    type: "candidate" | "topic";
+    title: string;
+    heading: string;
+    subHeading?: string;
+    extra?: string;
+  } | null>(null);
+
+  const cd = useDrawer<Candidate>(candidates, (item) => {
+    setModalData({
+      type: "candidate",
+      title: "KẾT QUẢ BỐC THĂM NGƯỜI THI",
+      heading: item.name,
+      subHeading: item.code ? `MÃ SỐ: ${item.code}` : undefined,
+      extra: item.note ? `Ghi chú: ${item.note}` : undefined,
+    });
+    setModalOpen(true);
+  });
+
+  const td = useDrawer<Topic>(topics, (item) => {
+    setModalData({
+      type: "topic",
+      title: "KẾT QUẢ BỐC THĂM NỘI DUNG THI",
+      heading: item.title,
+      subHeading: item.detail,
+    });
+    setModalOpen(true);
+  });
 
   const save = () => {
     if (!cd.current || !td.current) {
@@ -142,6 +193,108 @@ function Page() {
           </Button>
         </div>
       </div>
+
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+  <DialogContent
+    className="
+      max-w-3xl
+      overflow-hidden
+      rounded-3xl
+      border-0
+      p-0
+      shadow-2xl
+      bg-white
+    "
+  >
+    {/* Header */}
+    <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-900 px-8 py-6 text-center">
+      <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm">
+        <div className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" />
+        <span className="text-sm font-semibold tracking-[0.25em] uppercase text-yellow-300">
+          {modalData?.title}
+        </span>
+      </div>
+    </div>
+
+    {/* Body */}
+    <div className="px-8 py-12 text-center">
+      {modalData?.type === "candidate" ? (
+        <>
+          {modalData.subHeading && (
+            <div className="mb-6">
+              <span className="inline-block rounded-full bg-amber-100 px-5 py-2 text-sm font-bold text-amber-700">
+                {modalData.subHeading}
+              </span>
+            </div>
+          )}
+
+          <h2
+            className="
+              text-4xl
+              md:text-6xl
+              font-bold
+              text-emerald-800
+              leading-tight
+              break-words
+            "
+          >
+            {modalData.heading}
+          </h2>
+
+          {modalData.extra && (
+            <p className="mt-6 text-base text-slate-600">
+              {modalData.extra}
+            </p>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="mb-6">
+            <span className="inline-block rounded-full bg-amber-100 px-5 py-2 text-base font-bold text-amber-700">
+              {modalData?.heading}
+            </span>
+          </div>
+
+          {modalData?.subHeading ? (
+            <h2
+              className="
+                text-2xl
+                md:text-4xl
+                font-bold
+                text-slate-800
+                leading-relaxed
+                break-words
+              "
+            >
+              {modalData.subHeading}
+            </h2>
+          ) : (
+            <p className="text-slate-500 italic">
+              Không có nội dung chi tiết
+            </p>
+          )}
+        </>
+      )}
+
+      <div className="mt-10">
+        <Button
+          onClick={() => setModalOpen(false)}
+          className="
+            h-12
+            rounded-full
+            px-10
+            bg-emerald-700
+            hover:bg-emerald-800
+            text-white
+            font-semibold
+          "
+        >
+          Xác nhận kết quả
+        </Button>
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
     </AppShell>
   );
 }
