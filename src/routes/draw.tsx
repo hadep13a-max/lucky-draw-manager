@@ -165,43 +165,48 @@ function DrawCard(p: DrawCardProps) {
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
       <div className="flex items-center justify-between border-b border-border px-6 py-4">
-        <div className="flex items-center gap-2 font-medium">
-          <span className={`grid h-8 w-8 place-items-center rounded-md ${p.tone === "primary" ? "bg-primary/10 text-primary" : "bg-accent/30 text-accent-foreground"}`}>
+        <div className="flex items-center gap-2.5 font-medium">
+          <span className={`grid h-8 w-8 place-items-center rounded-lg ${p.tone === "primary" ? "bg-primary/10 text-primary" : "bg-accent/25 text-accent-foreground"}`}>
             {p.icon}
           </span>
-          {p.title}
+          <span className="text-[15px]">{p.title}</span>
         </div>
-        <span className="text-xs text-muted-foreground">{p.itemsCount} mục</span>
+        <span className="nums rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+          {p.itemsCount} mục
+        </span>
       </div>
-      <div className="bg-stage px-6 py-12 text-center text-primary-foreground">
+      <div className="relative bg-stage px-6 py-14 text-center text-primary-foreground">
         {empty ? (
           <div className="space-y-3">
             <p className="text-sm text-primary-foreground/70">{p.empty}</p>
             <Link
               to={p.emptyLink.to}
-              className="inline-block rounded-md bg-primary-foreground/10 px-4 py-2 text-sm font-medium hover:bg-primary-foreground/15"
+              className="inline-block rounded-full bg-primary-foreground/10 px-4 py-2 text-sm font-medium hover:bg-primary-foreground/15"
             >
               {p.emptyLink.label}
             </Link>
           </div>
         ) : (
           <div className={p.spinning ? "" : "animate-pop-in"}>
-            <p className="text-xs uppercase tracking-[0.3em] text-accent">
-              {p.spinning ? "Đang quay..." : p.current ? "Kết quả" : "Sẵn sàng"}
+            <p className="text-[10px] font-medium uppercase tracking-[0.32em] text-accent">
+              {p.spinning ? "Đang quay" : p.current ? "Kết quả" : "Sẵn sàng"}
             </p>
             <p
-              className={`mt-3 font-display text-4xl font-semibold leading-tight md:text-5xl ${p.spinning ? "opacity-80" : "text-gold"}`}
+              className={`mt-4 font-display text-[40px] font-semibold leading-[1.05] tracking-tight md:text-[52px] ${p.spinning ? "text-primary-foreground/85" : "text-gold italic"}`}
             >
               {p.display ?? "—"}
             </p>
             {p.subDisplay && !p.spinning && (
-              <p className="mx-auto mt-3 max-w-md text-sm text-primary-foreground/75">{p.subDisplay}</p>
+              <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-primary-foreground/70">
+                {p.subDisplay}
+              </p>
             )}
           </div>
         )}
+        {p.spinning && <div className="shimmer pointer-events-none absolute inset-0" />}
       </div>
       <div className="px-6 py-4">
-        <Button onClick={p.onSpin} disabled={empty || p.spinning} className="w-full" size="lg">
+        <Button onClick={p.onSpin} disabled={empty || p.spinning} className="w-full rounded-full" size="lg">
           <Shuffle className={`mr-2 h-4 w-4 ${p.spinning ? "animate-spin-slow" : ""}`} />
           {p.spinning ? "Đang quay..." : p.current ? "Quay lại" : "Bốc thăm"}
         </Button>
